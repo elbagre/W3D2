@@ -1,7 +1,59 @@
 class ModelBase
 
-  def self.all
+  def self.method_missing(*args)
+    method_name = args[0].to_s
+    super unless method_name.start_with?('find_by')
+    arguments = Hash.new
+    # method_name take out find_by
+    # split by _ and turn each into a symbol
 
+    text = method_name[("find_by_".length)..-1]
+    args_sym = text.split("_and_").map { |arg| arg.to_sym }
+
+    i = 1
+    args_sym.each do |sym|
+      arguments[sym] = args[i]
+      i += 1
+    end
+
+    self.where(arguments)
+  end
+
+
+  def self.where(options)
+    if options.is_a?(Hash)
+      variables = options.keys.map(&:to_s)
+      values = options.values
+
+      where_string = variables[0..-1].map do |var|
+        var.to_s + " = ?"
+      end.join(" AND ")
+    elsif options.is_a?(String)
+      where_string = options.gsub(/;/, "")
+      values = []
+    end
+
+    data = QuestionsDatabase.instance.execute(<<-SQL, *values)
+      SELECT
+        *
+      FROM
+        #{self.to_s.tableize}
+      WHERE
+        #{where_string}
+    SQL
+
+    data.map { |datum| self.new(datum) }
+  end
+
+  def self.all
+    data = QuestionsDatabase.instance.execute(<<-SQL)
+      SELECT
+        *
+      FROM
+        #{self.to_s.tableize}
+    SQL
+
+    data.map { |datum| self.new(datum) }
   end
 
   def self.find_by_id(id)
@@ -56,7 +108,7 @@ class ModelBase
     variables = self.instance_variables.rotate
     values = variables.map { |symbol| self.instance_variable_get(symbol) }
 
-    set_string = variables[0..-1].map do |var|
+    set_string = variables[0..-2].map do |var|
       var.to_s + " = ?"
     end.join(", ").gsub(/@/, "")
 
