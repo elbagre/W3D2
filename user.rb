@@ -1,3 +1,5 @@
+require_relative 'questionsdatabase'
+
 class User
   def self.find_by_name(fname, lname)
     user_data = QuestionsDatabase.instance.execute(<<-SQL, fname, lname)
@@ -23,7 +25,7 @@ class User
         id = ?
     SQL
 
-    User.new(user_data)
+    User.new(*user_data)
   end
 
   attr_accessor :fname, :lname

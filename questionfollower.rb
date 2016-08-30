@@ -1,3 +1,4 @@
+require_relative 'questionsdatabase'
 
 class QuestionFollows
   attr_accessor :follower_id, :question_id

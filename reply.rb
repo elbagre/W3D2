@@ -1,3 +1,4 @@
+require_relative 'questionsdatabase'
 
 class Reply
 

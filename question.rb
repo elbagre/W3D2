@@ -1,3 +1,4 @@
+require_relative 'questionsdatabase'
 
 class Question
   attr_accessor :title, :body, :author_id
@@ -30,7 +31,7 @@ class Question
         id = ?
     SQL
 
-    Question.new(question_data)
+    Question.new(*question_data)
   end
 
   def self.most_followed(n)
