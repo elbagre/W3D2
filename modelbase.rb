@@ -29,7 +29,7 @@ class ModelBase
         var.to_s + " = ?"
       end.join(" AND ")
     elsif options.is_a?(String)
-      where_string = options.gsub(/;/, "")
+      where_string = options
       values = []
     end
 
