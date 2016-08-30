@@ -12,7 +12,6 @@ class QuestionsDatabase < SQLite3::Database
 end
 
 class User
-
   def self.find_by_name(fname, lname)
     user_data = QuestionsDatabase.instance.execute(<<-SQL, fname, lname)
       SELECT
@@ -74,11 +73,31 @@ class User
     SQL
   end
 
+  def authored_questions
+    Question.find_by_author_id(id)
+  end
+
+  def authored_replies
+    Reply.find_by_author_id(id)
+  end
 end
 
 class Question
   attr_accessor :title, :body, :author_id
   attr_reader :id
+
+  def self.find_by_author_id(author_id)
+    question_data = QuestionDatabase.instance.exectute(<<-SQL, author_id)
+      SELECT
+        *
+      FROM
+        questions
+      WHERE
+        author_id = ?
+    SQL
+
+    question_data.map { |datum| Question.new(datum) }
+  end
 
   def self.find_by_id(id)
     question_data = QuestionsDatabase.instance.execute(<<-SQL, id)
@@ -122,6 +141,14 @@ class Question
       WHERE
         id = ?
     SQL
+  end
+
+  def author
+    User.find_by_id(author_id)
+  end
+
+  def replies
+    Reply.find_by_question_id(id)
   end
 end
 
@@ -190,6 +217,20 @@ end
 
 class Reply
 
+  def self.find_by_author_id(author_id)
+    data = QuestionsDatabase.instance.execute(<<-SQL, author_id)
+      SELECT
+        *
+      FROM
+        replies
+      WHERE
+        author_id = ?
+    SQL
+
+    data.map { |datum| Reply.new(datum) }
+  end
+
+
   def self.find_by_question(question_id)
     data = QuestionsDatabase.instance.execute(<<-SQL, question_id)
       SELECT
@@ -236,6 +277,31 @@ class Reply
       WHERE
         id = ?
     SQL
+  end
+
+  def author
+    User.find_by_id(author_id)
+  end
+
+  def question
+    Question.find_by_id(question_id)
+  end
+
+  def parent_reply
+    Reply.find_by_id(parent_id)
+  end
+
+  def child_replies
+    children = QuestionsDatabase.instance.execute(<<-SQL, id)
+      SELECT
+        *
+      FROM
+        replies
+      WHERE
+        parent_id = ?
+    SQL
+
+    children.map { |child| Reply.new(child) }
   end
 end
 
