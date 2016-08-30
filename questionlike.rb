@@ -5,14 +5,14 @@ class QuestionLike
   def self.num_likes_for_question_id(question_id)
     likes = QuestionsDatabase.instance.execute(<<-SQL, question_id)
       SELECT
-        COUNT(user_id)
+        COUNT(user_id) AS likes
       FROM
         question_likes
       WHERE
         question_id = ?
     SQL
 
-    likes
+    likes[0]['likes']
   end
 
   def self.likers_for_question_id(question_id)
@@ -56,9 +56,9 @@ class QuestionLike
       GROUP BY
         questions.id
       ORDER BY
-        COUNT(user_id)
+        COUNT(user_id) DESC
       LIMIT
-        n
+        ?
     SQL
 
     questions.map { |question| Question.new(question) }
@@ -88,7 +88,7 @@ class QuestionLike
     raise 'Already in database' if @id
     QuestionsDatabase.instance.execute(<<-SQL, user_id, question_id)
       INSERT INTO
-        users (user_id, question_id)
+        question_likes (user_id, question_id)
       VALUES
         (?, ?)
     SQL
@@ -100,7 +100,7 @@ class QuestionLike
     raise "#{self} not in database" unless @id
     QuestionsDatabase.instance.execute(<<-SQL, user_id, question_id, id)
       UPDATE
-        users
+        question_likes
       SET
         user_id = ?, question_id = ?
       WHERE

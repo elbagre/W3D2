@@ -68,7 +68,7 @@ class QuestionFollows
     raise 'Already in database' if @id
     QuestionsDatabase.instance.execute(<<-SQL, follower_id, question_id)
       INSERT INTO
-        users (follower_id, question_id)
+        question_follows (follower_id, question_id)
       VALUES
         (?, ?)
     SQL
@@ -80,7 +80,7 @@ class QuestionFollows
     raise "#{self} not in database" unless @id
     QuestionsDatabase.instance.execute(<<-SQL, follower_id, question_id, id)
       UPDATE
-        users
+        question_follows
       SET
         follower_id = ?, question_id = ?
       WHERE

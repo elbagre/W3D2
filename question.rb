@@ -9,7 +9,7 @@ class Question
   end
 
   def self.find_by_author_id(author_id)
-    question_data = QuestionDatabase.instance.exectute(<<-SQL, author_id)
+    question_data = QuestionsDatabase.instance.execute(<<-SQL, author_id)
       SELECT
         *
       FROM
@@ -35,7 +35,7 @@ class Question
   end
 
   def self.most_followed(n)
-    QuestionFollow.most_followed_questions(n)
+    QuestionFollows.most_followed_questions(n)
   end
 
   def initialize(options)
@@ -57,7 +57,7 @@ class Question
     raise 'Already in database' if @id
     QuestionsDatabase.instance.execute(<<-SQL, title, body, author_id)
       INSERT INTO
-        users (title, body, author_id)
+        questions (title, body, author_id)
       VALUES
         (?, ?, ?)
     SQL
@@ -69,7 +69,7 @@ class Question
     raise "#{self} not in database" unless @id
     QuestionsDatabase.instance.execute(<<-SQL, title, body, author_id, id)
       UPDATE
-        users
+        questions
       SET
         title = ?, body = ?, author_id = ?
       WHERE
@@ -82,7 +82,7 @@ class Question
   end
 
   def replies
-    Reply.find_by_question_id(id)
+    Reply.find_by_question(id)
   end
 
   def followers

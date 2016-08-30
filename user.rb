@@ -10,9 +10,9 @@ class User
       WHERE
         fname = ? AND lname = ?
     SQL
-
+    
     raise 'Not in Database' if user_data.empty?
-    User.new(user_data)
+    User.new(*user_data)
   end
 
   def self.find_by_id(id)
@@ -24,7 +24,7 @@ class User
       WHERE
         id = ?
     SQL
-
+    raise "#{self} does not exist" if user_data.empty?
     User.new(*user_data)
   end
 
@@ -87,9 +87,9 @@ class User
   end
 
   def average_karma
-    QuestionDatabase.instance.execute(<<-SQL, id)
+    karma = QuestionsDatabase.instance.execute(<<-SQL, id)
       SELECT
-        CAST(COUNT(user_id)/COUNT(DISTINCT(question_id)) AS FLOAT)
+        CAST(COUNT(user_id)/COUNT(DISTINCT(question_id)) AS FLOAT) AS avg
       FROM
         questions
       LEFT OUTER JOIN
@@ -97,5 +97,7 @@ class User
       WHERE
         author_id = ?
     SQL
+
+    karma[0]['avg']
   end
 end

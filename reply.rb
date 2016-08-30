@@ -29,6 +29,19 @@ class Reply
     data.map { |data| Reply.new(data) }
   end
 
+  def self.find_by_id(id)
+    data = QuestionsDatabase.instance.execute(<<-SQL, id)
+      SELECT
+        *
+      FROM
+        replies
+      WHERE
+        id = ?
+    SQL
+    return nil if data.empty?
+    Reply.new(*data)
+  end
+
   attr_accessor :question_id, :parent_id, :author_id, :body
   attr_reader :id
 
@@ -52,7 +65,7 @@ class Reply
     raise 'Already in database' if @id
     QuestionsDatabase.instance.execute(<<-SQL, question_id, parent_id, author_id, body)
       INSERT INTO
-        users (question_id, parent_id, author_id, body)
+        replies (question_id, parent_id, author_id, body)
       VALUES
         (?, ?, ?, ?)
     SQL
@@ -64,7 +77,7 @@ class Reply
     raise "#{self} not in database" unless @id
     QuestionsDatabase.instance.execute(<<-SQL, question_id, parent_id, author_id, body, id)
       UPDATE
-        users
+        replies
       SET
         question_id = ?, parent_id = ?, author_id = ?, body = ?
       WHERE
