@@ -3,7 +3,8 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
   id INTEGER PRIMARY KEY,
   fname TEXT NOT NULL,
-  lname TEXT NOT NULL
+  lname TEXT NOT NULL,
+  is_instructor BOOLEAN NOT NULL
 );
 
 DROP TABLE IF EXISTS questions;
@@ -54,10 +55,10 @@ CREATE TABLE question_likes (
 );
 
 INSERT INTO
-  users (fname, lname)
+  users (fname, lname, is_instructor)
 VALUES
-  ('Brian', 'Kim'),
-  ('Peter', 'McKinley');
+  ('Brian', 'Kim', 'false'),
+  ('Peter', 'McKinley', 'true');
 
 INSERT INTO
   questions (title, body, author_id)
