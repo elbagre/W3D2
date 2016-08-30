@@ -1,6 +1,4 @@
-require_relative 'questionsdatabase'
-
-class User
+class User < ModelBase
   def self.find_by_name(fname, lname)
     user_data = QuestionsDatabase.instance.execute(<<-SQL, fname, lname)
       SELECT
@@ -10,21 +8,8 @@ class User
       WHERE
         fname = ? AND lname = ?
     SQL
-    
-    raise 'Not in Database' if user_data.empty?
-    User.new(*user_data)
-  end
 
-  def self.find_by_id(id)
-    user_data = QuestionsDatabase.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        users
-      WHERE
-        id = ?
-    SQL
-    raise "#{self} does not exist" if user_data.empty?
+    raise 'Not in Database' if user_data.empty?
     User.new(*user_data)
   end
 
@@ -32,42 +17,10 @@ class User
   attr_reader :id
 
   def initialize(options)
-    @id = options['id']
+    super(options)
     @fname = options['fname']
     @lname = options['lname']
     @is_instructor = options['is_instructor']
-  end
-
-  def save
-    if @id
-      update
-    else
-      create
-    end
-  end
-
-  def create
-    raise 'Already in database' if @id
-    QuestionsDatabase.instance.execute(<<-SQL, fname, lname, is_instructor)
-      INSERT INTO
-        users (fname, lname, is_instructor)
-      VALUES
-        (?, ?, ?)
-    SQL
-
-    @id = QuestionsDatabase.instance.last_insert_row_id
-  end
-
-  def update
-    raise "#{self} not in database" unless @id
-    QuestionsDatabase.instance.execute(<<-SQL, fname, lname, is_instructor, id)
-      UPDATE
-        users
-      SET
-        fname = ?, lname = ?, is_instructor = ?
-      WHERE
-        id = ?
-    SQL
   end
 
   def authored_questions

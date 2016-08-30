@@ -1,6 +1,4 @@
-require_relative 'questionsdatabase'
-
-class QuestionLike
+class QuestionLike < ModelBase
 
   def self.num_likes_for_question_id(question_id)
     likes = QuestionsDatabase.instance.execute(<<-SQL, question_id)
@@ -71,40 +69,9 @@ class QuestionLike
   attr_reader :id
 
   def initialize(options)
-    @id = options['id']
+    super(options)
     @user_id = options['user_id']
     @question_id = option['question_id']
   end
 
-  def save
-    if @id
-      update
-    else
-      create
-    end
-  end
-
-  def create
-    raise 'Already in database' if @id
-    QuestionsDatabase.instance.execute(<<-SQL, user_id, question_id)
-      INSERT INTO
-        question_likes (user_id, question_id)
-      VALUES
-        (?, ?)
-    SQL
-
-    @id = QuestionsDatabase.instance.last_insert_row_id
-  end
-
-  def update
-    raise "#{self} not in database" unless @id
-    QuestionsDatabase.instance.execute(<<-SQL, user_id, question_id, id)
-      UPDATE
-        question_likes
-      SET
-        user_id = ?, question_id = ?
-      WHERE
-        id = ?
-    SQL
-  end
 end

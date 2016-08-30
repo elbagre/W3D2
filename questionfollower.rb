@@ -1,6 +1,4 @@
-require_relative 'questionsdatabase'
-
-class QuestionFollows
+class QuestionFollows < ModelBase
   attr_accessor :follower_id, :question_id
   attr_reader :id
 
@@ -51,40 +49,8 @@ class QuestionFollows
   end
 
   def initialize(options)
-    @id = options['id']
+    super(options)
     @follower_id = options['follower_id']
     @question_id = options['question_id']
-  end
-
-  def save
-    if @id
-      update
-    else
-      create
-    end
-  end
-
-  def create
-    raise 'Already in database' if @id
-    QuestionsDatabase.instance.execute(<<-SQL, follower_id, question_id)
-      INSERT INTO
-        question_follows (follower_id, question_id)
-      VALUES
-        (?, ?)
-    SQL
-
-    @id = QuestionsDatabase.instance.last_insert_row_id
-  end
-
-  def update
-    raise "#{self} not in database" unless @id
-    QuestionsDatabase.instance.execute(<<-SQL, follower_id, question_id, id)
-      UPDATE
-        question_follows
-      SET
-        follower_id = ?, question_id = ?
-      WHERE
-        id = ?
-    SQL
   end
 end
