@@ -80,6 +80,10 @@ class User
   def authored_replies
     Reply.find_by_author_id(id)
   end
+
+  def followed_questions
+    QuestionFollows.followed_questions_for_user_id(id)
+  end
 end
 
 class Question
@@ -150,13 +154,19 @@ class Question
   def replies
     Reply.find_by_question_id(id)
   end
+
+  def followers
+    QuestionFollows.followers_for_question_id(id)
+  end
+
+  
 end
 
 class QuestionFollows
   attr_accessor :follower_id, :question_id
   attr_reader :id
 
-  def self.find_by_follow_id(follower_id)
+  def self.followed_questions_for_user_id(follower_id)
     data = QuestionsDatabase.instance.execute(<<-SQL, follower_id)
       SELECT
         questions.*
@@ -170,7 +180,7 @@ class QuestionFollows
     all_questions = data.map { |data| Question.new(data) }
   end
 
-  def self.find_by_question_id(question_id)
+  def self.followers_for_question_id(question_id)
     data = QuestionsDatabase.instance.execute(<<-SQL, question_id)
       SELECT
         users.*
